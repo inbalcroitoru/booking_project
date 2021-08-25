@@ -50,8 +50,8 @@ def finalize(df,labels):
     pos_facilities,neg_facilities=get_pos_neg_topic_class(labels,FACILITIES)
     pos_staff,neg_staff=get_pos_neg_topic_class(labels,STAFF)
 
-    pos_topics={PRICE:pos_price,ROOM:pos_room,LOCATION:pos_location,FOOD:pos_food,FACILITIES:pos_staff,STAFF: pos_facilities}
-    neg_topics={PRICE:neg_price,ROOM:neg_room,LOCATION:neg_location,FOOD:neg_food,FACILITIES:neg_staff,STAFF:neg_facilities}
+    pos_topics={PRICE:pos_price,ROOM:pos_room,LOCATION:pos_location,FOOD:pos_food,FACILITIES:pos_facilities,STAFF:pos_staff}
+    neg_topics={PRICE:neg_price,ROOM:neg_room,LOCATION:neg_location,FOOD:neg_food,FACILITIES:neg_facilities,STAFF:neg_staff}
 
     for idx in range(6):
         df["topic_"+idx2topic[idx]+"_positive"] = pos_topics[idx]
@@ -73,13 +73,13 @@ def remove_special_chars_punc_xtra_spaces(text):
     # pat = r'[^a-zA-z0-9\"\'\s]'
     return text #re.sub(pat, '', text)
 
-def predict(df,first_time=False,num_labels=6):
+def predict(df,first_time,num_labels=6):
     module_path = os.path.dirname(os.path.realpath(__file__))
     if first_time:
         print('Downloading model weights ...')
-        gdrive_file_id = '1-P0-fWJUI0GBN6J8FY0IvSZPMznJCgpe'
+        gdrive_file_id = '118TMkiqtGGGk8N2hHsUvo90uOKLHSzKL'
         url = f'https://drive.google.com/uc?id={gdrive_file_id}'
-        weights_path = os.path.join(module_path, 'fixed_bert_booking.pt')
+        weights_path = os.path.join(module_path, 'fixed_bert_booking_final.pt')
         gdown.download(url, weights_path, quiet=False)
     else:
         weights_path = os.path.join(module_path, 'fixed_bert_booking.pt')
@@ -133,12 +133,14 @@ def predict(df,first_time=False,num_labels=6):
 
     # Flatten outputs
     tokenized_texts = [item for sublist in tokenized_texts for item in sublist]
+    comment_texts = [tokenizer.decode(text, skip_special_tokens=True, clean_up_tokenization_spaces=False) for text in
+                     tokenized_texts]
     pred_labels = [item for sublist in pred_labels for item in sublist]
     pred_bools = [pl>0.50 for pl in pred_labels]
     print("Finished predicting")
     return pred_bools
 
-def prepeare_data(read_file_name, save_file_name, read_type):
+def prepeare_data(read_file_name,first_time, save_file_name, read_type):
     start=time.time()
     if read_type=="csv":
         df = pd.read_csv(read_file_name)
@@ -154,16 +156,17 @@ def prepeare_data(read_file_name, save_file_name, read_type):
 
     # text_df= pd.DataFrame(df[["review_id","Positive"]].append(df[["review_id","Negative"]], ignore_index=True),columns=[["review_id","content"]])
     text_df["content"]=text_df["content"].apply(lambda x: remove_special_chars_punc_xtra_spaces(x) )
-    labels=predict(text_df)
+    labels=predict(text_df,first_time)
     labels_df=finalize(df,labels)
 
     labels_df.to_csv(save_file_name,index=True)
     print(time.time()-start)
 
-def main(file_path,save_path=None):
+def main(file_path,first_time,save_path=None):
     save_path=save_path if save_path else "labeled_"+file_path
-    prepeare_data(file_path,save_path,"csv")
+    prepeare_data(file_path,first_time,save_path,"csv")
 
 if __name__ == "__main__":
     file_path="reviews_features_train.csv"#"yourfilepath.csv"
-    main(file_path)
+    first_time=False
+    main(file_path,first_time)
