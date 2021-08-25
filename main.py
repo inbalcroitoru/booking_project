@@ -167,6 +167,6 @@ def main(file_path,first_time,save_path=None):
     prepeare_data(file_path,first_time,save_path,"csv")
 
 if __name__ == "__main__":
-    file_path="reviews_features_train.csv"#"yourfilepath.csv"
+    file_path="yourfilepath.csv"
     first_time=False
     main(file_path,first_time)
