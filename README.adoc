@@ -1,0 +1,6 @@
+Given hotel internet reviews, which consist of a positive part and a negative part,
+each part of the review will be labeled whether any of the following topics are discussed: price, hotel location, hotel rooms, food, facilities and hotel staff.
+
+The code performs the labeling using fine-tuned Bret which was trained on reviews from Booking.com.
+The file should be in CSV format and its path should be specified when calling the main function.
+In addition, if this is the first time you are running the code, you should change the variable first_time to True.
